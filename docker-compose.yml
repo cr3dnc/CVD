@@ -1,0 +1,31 @@
+version: "3.9"
+
+services: 
+  database:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes: 
+      - database:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/create_tables.sql
+  backend:
+    container_name: "cvd-api"
+    build:
+      context: .
+      dockerfile: CVD/Dockerfile    
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
+    depends_on:
+      - database
+    ports:
+      - "8000:80"
+    links:
+      - database
+    volumes:
+      - ./:/src
+volumes:
+  database:
+    driver: local
